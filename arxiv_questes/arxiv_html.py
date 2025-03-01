@@ -4,11 +4,13 @@ import re
 from pyquery import PyQuery as pq
 from urllib.parse import urljoin
 import multiprocessing
+import re
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s: %(message)s')
 
 BASE_URL = 'https://arxiv.org/search/'
+
 
 class ArxivCrawler:
     def __init__(self, query):
@@ -17,6 +19,7 @@ class ArxivCrawler:
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0'}
 
+    # 根据对应的url获取页面html内容
     def scrape_page(self, url):
         logging.info('scraping %s...', url)
         try:
@@ -27,6 +30,7 @@ class ArxivCrawler:
         except requests.RequestException:
             logging.error('error occurred while scraping %s', url, exc_info=True)
 
+    # 根据传入的查询关键词构造完整的索引页面URL，并调用scrape_page方法获取索引页面的HTML内容
     def scrape_index(self):
         params = {
             'query': self.query,
@@ -34,11 +38,24 @@ class ArxivCrawler:
             'source': 'header'
         }
         index_url = BASE_URL
-        return self.scrape_page(index_url + '?' + '&'.join([f'{k}={v}' for k, v in params.items()]))
+        full_url = index_url + '?' + '&'.join([f'{k}={v}' for k, v in params.items()])
+        return self.scrape_page(full_url)
+
+    
 
     # 通过使用
     def parse_index(self, html):
+        # 获取总页数以及每页的论文数量
         doc = pq(html)
+        result_text = doc('.title.is-clearfix').text()
+        total_pages_match = re.search(r'of (\d[\d,]*)\s*results', result_text)
+        if total_pages_match:
+            total_pages_str = total_pages_match.group(1).replace(',', '')
+            total_pages = int(total_pages_str)
+            print(f"总页数: {total_pages}")
+        else:
+            print("未找到总页数信息。")
+        # 获取总页数
         items = doc('.arxiv-result').items()
         for item in items:
             href = item.find('p.list-title a').attr('href')
