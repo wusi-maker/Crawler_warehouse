@@ -21,11 +21,7 @@ def get_parser():
     # 添加基础保存参数的路径
     parser.add_argument('--base_path', type=str, 
                         default='.', help='保存yaml文件的路径')
-    parser.add_argument(
-        '--original_dir',help='original pdf path')
-    parser.add_argument(
-        '--processed_dir',help='processed pdf path')
-    
+
     # 论文爬取相关参数
     parser.add_argument('--max_results', type=int, 
                         default=5, help='最大查询数量')
@@ -69,9 +65,11 @@ class ArxivPaperCrawler:
         # 初始化查询关键字和 YAML 文件路径
         parser=get_parser()
         p=parser.parse_args()
-        p.original_dir=p.save_base_dir+current_time+'_'+'/original_dir/' 
-        p.processed_dir=p.save_base_dir+current_time+'_'+'/processed_dir/' 
         p.config=p.save_base_dir+p.config+'.yaml' 
+
+        query_dir="_".join(query_list)
+        self.original_dir=p.save_base_dir+query_dir+'/original_dir/'
+        self.processed_dir=p.save_base_dir+query_dir+'/processed_dir/' 
         if not load_arg(parser, p):
            save_arg(p)
         self.args = load_arg(parser, p)
@@ -104,14 +102,17 @@ class ArxivPaperCrawler:
             }
             papers.append(paper)
             # 下载论文 PDF
-            if not os.path.exists(self.args.original_dir):
-                os.makedirs(self.args.original_dir)
-            pdf_path = os.path.join(self.args.original_dir, f"{result.entry_id.split('/')[-1]}.pdf")
-            response = requests.get(result.pdf_url, headers=headers)
-            with open(pdf_path, 'wb') as f:
-                f.write(response.content)
-            time.sleep(self.args.sleep_time)
-        print(f"获取到 {len(papers)} 篇论文")
+            if not os.path.exists(self.original_dir):
+                os.makedirs(self.original_dir)
+            pdf_path = os.path.join(self.original_dir, f"{result.entry_id.split('/')[-1]}.pdf")
+             # 检查文件是否已经存在
+            if not os.path.exists(pdf_path):
+                response = requests.get(result.pdf_url, headers=headers)
+                with open(pdf_path, 'wb') as f:
+                    f.write(response.content)
+                time.sleep(self.args.sleep_time)
+
+
         for num, paper in enumerate(papers):
             print(f'第{num}篇论文的摘要是{paper["abstract"]}')
         return papers
@@ -123,13 +124,3 @@ if __name__ == "__main__":
     papers = crawler.crawl_papers()
 
 
-current_time = datetime.now().strftime("%Y-%m-%d_%H_%M")
-# 初始化查询关键字和 YAML 文件路径
-parser=get_parser()
-p=parser.parse_args()
-p.original_dir=p.save_base_dir+current_time+'_'+'/original_dir/' 
-p.processed_dir=p.save_base_dir+current_time+'_'+'/processed_dir/' 
-p.config=p.save_base_dir+p.config+'.yaml' 
-key = vars(p).keys()
-for k in vars(p).keys():
-    print(k.key())
