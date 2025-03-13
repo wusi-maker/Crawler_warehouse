@@ -1,19 +1,87 @@
 import arxiv
 import time
 import requests
+from typing import List, Dict, Any
+from datetime import datetime
+
+import ast
+import argparse
 import yaml
+import os
+
+
+def get_parser():
+    parser = argparse.ArgumentParser(description='Arxiv Paper Crawler')
+
+    # 添加保存文件路径参数
+    parser.add_argument('--save_base_dir', type=str, 
+                        default='./result/',help='保存文件路径')
+    parser.add_argument('--config', type=str,
+                        default='config',help='保存文件路径')
+    # 添加基础保存参数的路径
+    parser.add_argument('--base_path', type=str, 
+                        default='.', help='保存yaml文件的路径')
+    parser.add_argument(
+        '--original_dir',help='original pdf path')
+    parser.add_argument(
+        '--processed_dir',help='processed pdf path')
+    
+    # 论文爬取相关参数
+    parser.add_argument('--max_results', type=int, 
+                        default=5, help='最大查询数量')
+    parser.add_argument('--headers', type=ast.literal_eval, 
+                        default={
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0'}, help='请求头')
+    parser.add_argument('--sleep_time', type=int, 
+                        default=1, help='请求间隔时间')
+    return parser
+
+def load_arg(parser, p):
+    # save arg
+    if  os.path.exists(p.config):
+        with open(p.config, 'r') as f:
+            default_arg = yaml.safe_load(f)
+
+        key = vars(p).keys()
+        for k in default_arg.keys():
+            if k not in key:
+                print(f'WRONG ARG: {k}')
+                raise ValueError(f'Unexpected argument {k} in config file')
+        parser.set_defaults(**default_arg)
+        return parser.parse_args()
+    else:
+        return False
+
+def save_arg(args):
+    # save arg
+    arg_dict = vars(args)
+    if not os.path.exists(args.save_base_dir):
+        os.makedirs(args.save_base_dir)
+    with open(args.config, 'w') as f:
+        yaml.dump(arg_dict, f)
+
 
 class ArxivPaperCrawler:
-    def __init__(self, query, args_path):
-        # 初始化查询关键字和从 YAML 文件读取参数
-        self.query = query
-        with open(args_path, 'r', encoding='utf-8') as f:
-            self.args = yaml.safe_load(f)
+    def __init__(self, query_list:List[str]):
+        self.query=" OR ".join(f'all:"{q}"' for q in query_list)
+        current_time = datetime.now().strftime("%Y-%m-%d_%H_%M")
+
+        # 初始化查询关键字和 YAML 文件路径
+        parser=get_parser()
+        p=parser.parse_args()
+        p.original_dir=p.save_base_dir+current_time+'_'+'/original_dir/' 
+        p.processed_dir=p.save_base_dir+current_time+'_'+'/processed_dir/' 
+        p.config=p.save_base_dir+p.config+'.yaml' 
+        if not load_arg(parser, p):
+           save_arg(p)
+        self.args = load_arg(parser, p)
+
+
 
     def crawl_papers(self):
         # 从 YAML 文件中获取请求头和最大查询数量
-        headers = self.args.get('headers', {})
-        max_results = self.args.get('max_results', 5)
+        headers = self.args.headers
+        max_results = self.args.max_results    
         client = arxiv.Client()
         search = arxiv.Search(
             query=self.query,
@@ -35,10 +103,14 @@ class ArxivPaperCrawler:
                 "arxiv_id": result.entry_id.split('/')[-1]
             }
             papers.append(paper)
+            # 下载论文 PDF
+            if not os.path.exists(self.args.original_dir):
+                os.makedirs(self.args.original_dir)
+            pdf_path = os.path.join(self.args.original_dir, f"{result.entry_id.split('/')[-1]}.pdf")
             response = requests.get(result.pdf_url, headers=headers)
-            with open(f"{result.entry_id.split('/')[-1]}.pdf", 'wb') as f:
+            with open(pdf_path, 'wb') as f:
                 f.write(response.content)
-            time.sleep(1)
+            time.sleep(self.args.sleep_time)
         print(f"获取到 {len(papers)} 篇论文")
         for num, paper in enumerate(papers):
             print(f'第{num}篇论文的摘要是{paper["abstract"]}')
@@ -46,9 +118,18 @@ class ArxivPaperCrawler:
 
 # 示例调用
 if __name__ == "__main__":
-    query = 'all:"graph neural network" OR all:"GNN"'
-    args_path = 'config.yaml'  # 假设 YAML 文件名为 config.yaml
-    crawler = ArxivPaperCrawler(query, args_path)
+    query = ["graph neural network", "GNN"]
+    crawler = ArxivPaperCrawler(query)
     papers = crawler.crawl_papers()
 
 
+current_time = datetime.now().strftime("%Y-%m-%d_%H_%M")
+# 初始化查询关键字和 YAML 文件路径
+parser=get_parser()
+p=parser.parse_args()
+p.original_dir=p.save_base_dir+current_time+'_'+'/original_dir/' 
+p.processed_dir=p.save_base_dir+current_time+'_'+'/processed_dir/' 
+p.config=p.save_base_dir+p.config+'.yaml' 
+key = vars(p).keys()
+for k in vars(p).keys():
+    print(k.key())
