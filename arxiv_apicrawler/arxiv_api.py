@@ -60,7 +60,7 @@ def save_arg(args):
 class ArxivPaperCrawler:
     def __init__(self, query_list:List[str]):
         self.query=" OR ".join(f'all:"{q}"' for q in query_list)
-        current_time = datetime.now().strftime("%Y-%m-%d_%H_%M")
+        current_time = datetime.now().strftime("%Y-%m-%d")
 
         # 初始化查询关键字和 YAML 文件路径
         parser=get_parser()
@@ -68,13 +68,11 @@ class ArxivPaperCrawler:
         p.config=p.save_base_dir+p.config+'.yaml' 
 
         query_dir="_".join(query_list)
-        self.original_dir=p.save_base_dir+query_dir+'/original_dir/'
-        self.processed_dir=p.save_base_dir+query_dir+'/processed_dir/' 
+        self.original_dir=p.save_base_dir+query_dir+'/original_dir/'+current_time+'/'
+        self.processed_dir=p.save_base_dir+query_dir+'/processed_dir/'+current_time+'/'
         if not load_arg(parser, p):
            save_arg(p)
         self.args = load_arg(parser, p)
-
-
 
     def crawl_papers(self):
         # 从 YAML 文件中获取请求头和最大查询数量
