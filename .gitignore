@@ -1,0 +1,12 @@
+# 忽略环境文件
+.env
+*.env
+API_KEY.env
+
+# 忽略IDE相关文件
+.vscode/
+.idea/
+
+# 忽略Python缓存文件
+__pycache__/
+*.py[cod]

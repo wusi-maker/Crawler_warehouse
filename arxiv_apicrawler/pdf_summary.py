@@ -1,14 +1,17 @@
 
 # 需申请API_KEY：https://platform.deepseek.com/
+import os
 import requests
+from dotenv import load_dotenv  # 新增环境变量库
 
-
+# 加载.env文件中的环境变量
+load_dotenv()
 
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
 
 def parse_with_deepseek(text):
     headers = {
-        "Authorization": "Bearer sk-1de5beecef9c4a5a9e3b5754d4e2288b",
+        "Authorization": f"Bearer {os.getenv('DEEPSEEK_API_KEY')}",  # 从环境变量读取
         "Content-Type": "application/json"
     }
     payload = {
