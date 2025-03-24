@@ -5,8 +5,8 @@ import platform
 def execute_git_commands(commit_message):
     try:
         # 新增代理配置
-        subprocess.run(['git', 'config', '--global', 'http.proxy', 'http://<proxy_address:port>'], check=True)
-        subprocess.run(['git', 'config', '--global', 'https.proxy', 'http://<proxy_address:port>'], check=True)
+        subprocess.run(['git', 'config', '--global', 'http.proxy', 'http://<127.0.0.1:7890>'], check=True)
+        subprocess.run(['git', 'config', '--global', 'https.proxy', 'http://<127.0.0.1:7890>'], check=True)
         
         # 执行 git add . 命令
         subprocess.run(['git', 'add', '.'], check=True)
