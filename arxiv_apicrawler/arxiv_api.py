@@ -20,7 +20,7 @@ def get_parser():
                         default='config',help='保存文件路径')
     # 添加基础保存参数的路径
     parser.add_argument('--base_path', type=str, 
-                        default='.', help='保存yaml文件的路径')
+                        default='.', help='基础路径')
 
     # 论文爬取相关参数
     parser.add_argument('--max_results', type=int, 
@@ -103,17 +103,80 @@ class ArxivPaperCrawler:
             if not os.path.exists(self.original_dir):
                 os.makedirs(self.original_dir)
             pdf_path = os.path.join(self.original_dir, f"{result.entry_id.split('/')[-1]}.pdf")
-             # 检查文件是否已经存在
+            # 检查文件是否已经存在
             if not os.path.exists(pdf_path):
                 response = requests.get(result.pdf_url, headers=headers)
                 with open(pdf_path, 'wb') as f:
                     f.write(response.content)
                 time.sleep(self.args.sleep_time)
 
+            # 导入 pdf_summary 中的函数
+            from pdf_summary import parse_with_deepseek
+
+            # 这里简单使用摘要作为预处理输入，可根据实际需求修改
+            input_text = result.summary
+
+            # 调用 DeepSeek API 解析
+            response_text = parse_with_deepseek(input_text)
+
+            if response_text:
+                # 确保处理目录存在
+                if not os.path.exists(self.processed_dir):
+                    os.makedirs(self.processed_dir)
+
+                # 保存回答文件
+                output_path = os.path.join(self.processed_dir, f"{result.entry_id.split('/')[-1]}_summary.json")
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    f.write(response_text)
 
         for num, paper in enumerate(papers):
             print(f'第{num}篇论文的摘要是{paper["abstract"]}')
         return papers
+
+
+
+
+# 需申请API_KEY：https://platform.deepseek.com/
+import requests
+
+DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
+
+def parse_with_deepseek(text):
+    headers = {
+        "Authorization": "Bearer sk-1de5beecef9c4a5a9e3b5754d4e2288b",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": "deepseek-chat",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": text}
+        ],
+        "temperature": 0.1  # 降低随机性
+    }
+    response = requests.post(DEEPSEEK_URL, json=payload, headers=headers)
+    return response.json()["choices"][0]["message"]["content"]
+
+# 专业级Prompt设计
+system_prompt = """你是一名学术论文解析专家，请从文本中提取以下信息（JSON格式）：
+{
+  "title": "论文标题",
+  "authors": ["作者1", "作者2"],
+  "keywords": ["关键词1", "关键词2"],
+  "abstract": "摘要文本",
+  "formulas": [
+    {"id": "eq1", "latex": "公式LaTeX"},
+  ],
+  "references": [
+    {"title": "引用论文标题", "year": 2020}
+  ]
+}
+要求：
+1. 公式保留原始上下文编号（如Eq.1）
+2. 作者名格式为"姓氏, 名字首字母."
+3. 引用文献需去重
+4. 若无对应内容留空"""
+
 
 # 示例调用
 if __name__ == "__main__":
