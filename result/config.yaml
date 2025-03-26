@@ -1,8 +1,0 @@
-base_path: .
-config: ./result/config.yaml
-headers:
-  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
-    like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0
-max_results: 1
-save_base_dir: ./result/
-sleep_time: 1
