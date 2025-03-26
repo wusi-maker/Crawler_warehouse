@@ -12,4 +12,4 @@ __pycache__/
 *.py[cod]
 
 # 忽略爬取的pdf
-results/
+result/
