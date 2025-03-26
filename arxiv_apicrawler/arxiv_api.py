@@ -11,6 +11,8 @@ import os
 # 与处理pdf以减少token的使用】
 import re
 import fitz
+from pdf_summary import parse_with_deepseek,check_api_connection
+
 
 
 def get_parser():
@@ -116,7 +118,7 @@ class ArxivPaperCrawler:
         # 合并短行
         text = re.sub(r'-\n(\w)', r'\1', text)  # 处理换行连字符
         max_line_length = 15000  # 定义最大行长度
-        return text[:max_line_length]  # 限制最大长度
+        return text  # 限制最大长度
 
     # 根据传入的查询关键字爬取对应pdf并使用API进行解析
     def crawl_papers(self):
@@ -155,9 +157,6 @@ class ArxivPaperCrawler:
                     f.write(response.content)
                 time.sleep(self.args.sleep_time)
 
-            # 导入 pdf_summary 中的函数
-            from pdf_summary import parse_with_deepseek
-
             # 新增PDF预处理流程
             print(f"开始解析论文 {result.entry_id.split('/')[-1]}")
             try:
@@ -167,7 +166,9 @@ class ArxivPaperCrawler:
             except Exception as e:
                 print(f"PDF解析失败: {e}, 回退到摘要处理")
                 full_text = result.summary
-
+            if  not check_api_connection():
+                print("API连接失败，终止程序")
+                break
             # 调用 DeepSeek API 解析
             response_text = parse_with_deepseek(full_text)
 
@@ -189,6 +190,7 @@ class ArxivPaperCrawler:
 
 # 示例调用
 if __name__ == "__main__":
+    
     query = ["graph neural network", "Trajectory prediction"]
     crawler = ArxivPaperCrawler(query)
     papers = crawler.crawl_papers()
