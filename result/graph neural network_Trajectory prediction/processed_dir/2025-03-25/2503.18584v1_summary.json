@@ -1,0 +1,30 @@
+```json
+{
+  "title": "A Universal Model Combining Differential Equations and Neural Networks for Ball Trajectory Prediction",
+  "authors": [
+    "Shi, Z.",
+    "Zhu, C.",
+    "Yang, F.",
+    "Yan, J.",
+    "Qin, Z.",
+    "Shi, S.",
+    "Chen, Z."
+  ],
+  "keywords": [
+    "universal method",
+    "physics and data-driven",
+    "ball trajectory prediction",
+    "differential equations"
+  ],
+  "abstract": "This paper presents a data-driven universal ball trajectory prediction method integrated with physics equations. Existing methods are designed for specific ball types and struggle to generalize. This challenge arises from three key factors. First, learning-based models require large datasets but suffer from accuracy drops in unseen scenarios. Second, physics-based models rely on complex formulas and detailed inputs, yet accurately obtaining ball states, such as spin, is often impractical. Third, integrating physical principles with neural networks to achieve high accuracy, fast inference, and strong generalization remains difficult. To address these issues, we propose an innovative approach that incorporates physics-based equations and neural networks. We first derive three generalized physical formulas. Then, using a neural network and observed trajectory points, we infer certain parameters while fitting the remaining ones. These formulas enable precise trajectory prediction with minimal training data: only a few dozen samples. Extensive experiments demonstrate our method’s superiority in generalization, real-time performance, and accuracy. The trajectories data is available on: https://github.com/any11name/trajectories",
+  "formulas": [
+    {"id": "eq1", "latex": "a_{fd} = k_x \\cdot v^2"},
+    {"id": "eq2", "latex": "a_{fdx} = -\\frac{v_x}{v} \\cdot k_x \\cdot v^2"},
+    {"id": "eq3", "latex": "a_x \\approx a_{fdx} \\approx k_x \\cdot v_x^2"},
+    {"id": "eq4", "latex": "\\frac{d^2x}{dt^2} = k_x \\cdot \\left(\\frac{dx}{dt}\\right)^2"},
+    {"id": "eq5", "latex": "x = -\\frac{1}{k_x} \\ln(t + c_{x2}) + c_{x3}"},
+    {"id": "eq6", "latex": "x = c_{x1} \\cdot \\ln(t + c_{x2}) + c_{x3}"}
+  ],
+  "references": []
+}
+```

@@ -1,0 +1,16 @@
+```json
+{
+  "title": "Energy-Efficient Dynamic Training and Inference for GNN-Based Network Modeling",
+  "authors": ["Singhal, C.", "Hadjadj-Aoul, Y."],
+  "keywords": ["Network modeling", "Adaptive GNN Training and Inference", "Machine learning orchestrator", "Energy-efficiency", "Mobile-edge-cloud continuum"],
+  "abstract": "Efficient network modeling is essential for resource optimization and network planning in next-generation large-scale complex networks. Traditional approaches, such as queuing theory-based modeling and packet-based simulators, can be inefficient due to the assumption made and the computational expense, respectively. To address these challenges, we propose an innovative energy-efficient dynamic orchestration of Graph Neural Networks (GNN) based model training and inference framework for context-aware network modeling and predictions. We have developed a low-complexity solution framework, QAG, that is a Quantum approximation optimization (QAO) algorithm for Adaptive orchestration of GNN-based network modeling. We leverage the tripartite graph model to represent a multi-application system with many compute nodes. Thereafter, we apply the constrained graph-cutting using QAO to find the feasible energy-efficient configurations of the GNN-based model and deploying them on the available compute nodes to meet the network modeling application requirements. The proposed QAG scheme closely matches the optimum and offers at least a 50% energy saving while meeting the application requirements with 60% lower churn-rate.",
+  "formulas": [
+    {"id": "eq1", "latex": "\\psi = \\begin{cases} 0, & \\text{load pre-trained model \\& infer} \\\\ 1, & \\text{load pre-trained model, update, \\& infer} \\end{cases}"},
+    {"id": "eq2", "latex": "\\chi^h(v_i, v_j) = \\begin{cases} 1, & \\text{if } v_i \\text{ and } v_j \\text{ are active for application } h \\\\ 0, & \\text{otherwise} \\end{cases}"},
+    {"id": "eq3", "latex": "\\tau^h = \\sum_{\\forall v_i,v_j \\in V, v_i \\neq v_j} t^h(v_i, v_j) \\cdot \\chi^h(v_i, v_j), \\quad t^h(v_i, v_j) = \\frac{c^h(v_i, v_j)}{x_c^h(v_j)}"},
+    {"id": "eq4", "latex": "E^h = \\sum_{\\forall v_i,v_j \\in V, v_i \\neq v_j} t^h(v_i, v_j) \\cdot \\chi^h(v_i, v_j) \\cdot \\xi(v_j)"},
+    {"id": "eq5a-eq5e", "latex": "\\begin{aligned} \\min_{\\chi} & \\sum_{h\\in H} E^h \\\\ \\text{s.t. } & \\tau^h \\leq \\tau^{h}_{\\text{max}} \\\\ & \\sum_{\\forall v_i\\in V_1, \\forall v_j\\in V_2} \\ell^h(v_i,v_j) \\cdot \\chi^h(v_i, v_j) \\leq \\ell^{h}_{\\text{max}}, \\forall h \\in H \\\\ & \\sum_{\\forall v_i\\in V_1, \\forall v_j\\in V_2} \\chi^h(v_i, v_j) \\cdot c^h(v_i, v_j) \\leq \\sum_{\\forall v_i\\in V_2, \\forall v_j\\in V_3} \\chi^h(v_i, v_j) \\cdot x_c^h(v_j), \\forall h \\in H \\\\ & \\sum_{\\forall v_i\\in V_1, \\forall v_j\\in V_2} \\chi^h(v_i, v_j) = 1, \\quad \\sum_{\\forall v_i\\in V_2, \\forall v_j\\in V_3} \\chi^h(v_i, v_j) = 1, \\forall h \\in H \\end{aligned}"}
+  ],
+  "references": []
+}
+```

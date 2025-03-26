@@ -1,14 +1,27 @@
-
 # 需申请API_KEY：https://platform.deepseek.com/
 import os
 import requests
 from dotenv import load_dotenv  # 新增环境变量库
 
-# 加载.env文件中的环境变量
-load_dotenv()
+# 修改环境变量加载方式（指定绝对路径）
+from pathlib import Path
+
+# 计算项目根目录路径（向上两级）
+project_root = Path(__file__).parent.parent
+env_path = project_root / "API_KEY.env"
+print(f"加载环境变量路径: {env_path}")
+print(f"环境变量存在性: {env_path.exists()}")
+# 显式加载指定路径的.env文件
+load_dotenv(dotenv_path=env_path, override=True)
+api_key = os.getenv('DEEPSEEK_API_KEY')
+if not api_key:
+    print("错误：未找到DEEPSEEK_API_KEY环境变量")
+    print("请检查：1. .env文件是否存在 2. 变量名是否正确 3. 文件路径")
+else:
+    print("DeepSeek API 调用成功")
+
 
 DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-
 def parse_with_deepseek(text):
     headers = {
         "Authorization": f"Bearer {os.getenv('DEEPSEEK_API_KEY')}",  # 从环境变量读取
@@ -46,7 +59,6 @@ def parse_with_deepseek(text):
     except ValueError as json_err:
         print(f"JSON 解析错误发生: {json_err}")
         return None
-
 
 
 # 专业级Prompt设计

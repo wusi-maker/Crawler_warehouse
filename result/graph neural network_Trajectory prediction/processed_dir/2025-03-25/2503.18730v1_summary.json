@@ -1,0 +1,24 @@
+```json
+{
+  "title": "Predicting the Road Ahead: A Knowledge Graph based Foundation Model for Scene Understanding in Autonomous Driving",
+  "authors": [
+    "Zhou, H.",
+    "Schimid, S.",
+    "Li, Y.",
+    "Halilaj, L.",
+    "Yao, X.",
+    "Cao, W."
+  ],
+  "keywords": [
+    "Foundation Model",
+    "Pre-trained Language Model",
+    "Scene Understanding",
+    "Autonomous Driving"
+  ],
+  "abstract": "The autonomous driving field has seen remarkable advancements in various topics, such as object recognition, trajectory prediction, and motion planning. However, current approaches face limitations in effectively comprehending the complex evolutions of driving scenes over time. This paper proposes FM4SU, a novel methodology for training a symbolic foundation model (FM) for scene understanding in autonomous driving. It leverages knowledge graphs (KGs) to capture sensory observation along with domain knowledge such as road topology, traffic rules, or complex interactions between traffic participants. A bird’s eye view (BEV) symbolic representation is extracted from the KG for each driving scene, including the spatio-temporal information among the objects across the scenes. The BEV representation is serialized into a sequence of tokens and given to pre-trained language models (PLMs) for learning an inherent understanding of the co-occurrence among driving scene elements and generating predictions on the next scenes. We conducted a number of experiments using the nuScenes dataset and KG in various scenarios. The results demonstrate that fine-tuned models achieve significantly higher accuracy in all tasks. The fine-tuned T5 model achieved a next scene prediction accuracy of 86.7%. This paper concludes that FM4SU offers a promising foundation for developing more comprehensive models for scene understanding in autonomous driving.",
+  "formulas": [],
+  "references": [
+    {"title": "nuScenes: A multimodal dataset for autonomous driving", "year": 2020}
+  ]
+}
+```

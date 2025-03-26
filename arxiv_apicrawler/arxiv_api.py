@@ -8,9 +8,13 @@ import ast
 import argparse
 import yaml
 import os
+# 与处理pdf以减少token的使用】
+import re
+import fitz
 
 
 def get_parser():
+    #  从命令行中获取参数
     parser = argparse.ArgumentParser(description='Arxiv Paper Crawler')
 
     # 添加保存文件路径参数
@@ -74,6 +78,47 @@ class ArxivPaperCrawler:
            save_arg(p)
         self.args = load_arg(parser, p)
 
+    # 解析pdf内容，仅仅提取正文内容
+    def extract_main_content(self, pdf_path: str) -> str:
+        """专业级学术论文解析方法"""
+        doc = fitz.open(pdf_path)
+        text_parts = []
+        section_blacklist = {'references', 'acknowledgements', 'appendix', 'supplementary'}
+        current_section = None
+        
+        for page in doc:
+            text = page.get_text("text")
+            for line in text.split('\n'):
+                # 识别章节标题（支持数字编号和全大写格式）
+                section_match = re.match(r'^\s*(\d+(\.\d+)*)?\s*([A-Z][A-Z\s]+)\s*$', line, re.IGNORECASE)
+                if section_match:
+                    current_section = section_match.group(3).strip().lower()
+                    if current_section in section_blacklist:
+                        break  # 遇到黑名单章节则停止收集
+                
+                # 仅收集有效章节内容
+                if current_section not in section_blacklist:
+                    text_parts.append(line)
+        
+        # 后处理流程
+        processed_text = self.postprocess_text('\n'.join(text_parts))
+        return processed_text or "无法提取有效文本"  # 保证最低返回内容
+
+    def postprocess_text(self, text: str) -> str:
+        """文本后处理"""
+        # 移除页眉页脚
+        text = re.sub(r'\n\d+\n', '\n', text)  # 页码
+        text = re.sub(r'arXiv:\d+\.\d+v\d+.*\n', '', text)  # arXiv标识
+        
+        # 移除公式编号
+        text = re.sub(r'\(Eq\.?(\d+)\)', r'(\1)', text)  # 将 (Eq.3) 简化为 (3)
+        
+        # 合并短行
+        text = re.sub(r'-\n(\w)', r'\1', text)  # 处理换行连字符
+        max_line_length = 15000  # 定义最大行长度
+        return text[:max_line_length]  # 限制最大长度
+
+    # 根据传入的查询关键字爬取对应pdf并使用API进行解析
     def crawl_papers(self):
         # 从 YAML 文件中获取请求头和最大查询数量
         headers = self.args.headers
@@ -113,11 +158,18 @@ class ArxivPaperCrawler:
             # 导入 pdf_summary 中的函数
             from pdf_summary import parse_with_deepseek
 
-            # 这里简单使用摘要作为预处理输入，可根据实际需求修改
-            input_text = result.summary
+            # 新增PDF预处理流程
+            print(f"开始解析论文 {result.entry_id.split('/')[-1]}")
+            try:
+                # 使用PyMuPDF提取结构化文本
+                full_text = self.extract_main_content(pdf_path)
+                print(f"论文解析完成，有效文本长度：{len(full_text)}字符")
+            except Exception as e:
+                print(f"PDF解析失败: {e}, 回退到摘要处理")
+                full_text = result.summary
 
             # 调用 DeepSeek API 解析
-            response_text = parse_with_deepseek(input_text)
+            response_text = parse_with_deepseek(full_text)
 
             if response_text:
                 # 确保处理目录存在
@@ -135,52 +187,9 @@ class ArxivPaperCrawler:
 
 
 
-
-# 需申请API_KEY：https://platform.deepseek.com/
-import requests
-
-DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions"
-
-def parse_with_deepseek(text):
-    headers = {
-        "Authorization": "Bearer sk-1de5beecef9c4a5a9e3b5754d4e2288b",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": "deepseek-chat",
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": text}
-        ],
-        "temperature": 0.1  # 降低随机性
-    }
-    response = requests.post(DEEPSEEK_URL, json=payload, headers=headers)
-    return response.json()["choices"][0]["message"]["content"]
-
-# 专业级Prompt设计
-system_prompt = """你是一名学术论文解析专家，请从文本中提取以下信息（JSON格式）：
-{
-  "title": "论文标题",
-  "authors": ["作者1", "作者2"],
-  "keywords": ["关键词1", "关键词2"],
-  "abstract": "摘要文本",
-  "formulas": [
-    {"id": "eq1", "latex": "公式LaTeX"},
-  ],
-  "references": [
-    {"title": "引用论文标题", "year": 2020}
-  ]
-}
-要求：
-1. 公式保留原始上下文编号（如Eq.1）
-2. 作者名格式为"姓氏, 名字首字母."
-3. 引用文献需去重
-4. 若无对应内容留空"""
-
-
 # 示例调用
 if __name__ == "__main__":
-    query = ["graph neural network", "GNN"]
+    query = ["graph neural network", "Trajectory prediction"]
     crawler = ArxivPaperCrawler(query)
     papers = crawler.crawl_papers()
 

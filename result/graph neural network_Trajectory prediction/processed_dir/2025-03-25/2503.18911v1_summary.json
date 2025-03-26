@@ -1,0 +1,23 @@
+```json
+{
+  "title": "Multi-Physics Inverse Design of Varifocal Optical Devices using Data-Driven Surrogates and Differential Modeling",
+  "authors": [
+    "Jin, Z.",
+    "Liu, Z.",
+    "Elabbasi, N.",
+    "Ulissi, Z.",
+    "Gu, G.X.",
+    "Nie, Z."
+  ],
+  "keywords": [
+    "piezoelectric varifocal components",
+    "differential physics",
+    "surrogate modeling",
+    "ray tracing",
+    "inverse design"
+  ],
+  "abstract": "Designing a new varifocal architecture in AR glasses poses significant challenges due to the complex interplay of multiple physics disciplines, including innovated piezo-electric material, solid mechanics, electrostatics, and optics. Traditional design methods, which treat each physics separately, are insufficient for this problem as they fail to establish the intricate relationships among design parameters in such a large and sensitive space, leading to suboptimal solutions. To address this challenge, we propose a novel design pipeline, mPhDBBs (multi-Physics Differential Building Blocks), that integrates these diverse physics through a graph neural network-based surrogate model and a differentiable ray tracing model. A hybrid optimization method combining evolutionary and gradient approaches is employed to efficiently determine superior design variables that achieve desired optical objectives, such as focal length and focusing quality. Our results demonstrate the effectiveness of mPhDBBs, achieving high accuracy with minimal training data and computational resources, resulting in a speedup of at least 1000 times compared to non-gradient-based methods. This work offers a promising paradigm shift in product design, enabling rapid and accurate optimization of complex multi-physics systems, and demonstrates its adaptability to other inverse design problems.",
+  "formulas": [],
+  "references": []
+}
+```
