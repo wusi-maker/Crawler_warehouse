@@ -40,6 +40,7 @@ def check_api_connection(max_Reconnect=5):
     while reconnect_count <= max_Reconnect:
         try:
             response = requests.post(DEEPSEEK_URL, json=payload, headers=headers)
+            # 检查状态码:- 状态码为 200-299：正常继续;状态码为 400-599：抛出 HTTPError 异常
             response.raise_for_status()
             print("DeepSeek API 连接成功")
             return True

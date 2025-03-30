@@ -153,14 +153,16 @@ class ArxivPaperCrawler:
             # 检查文件是否已经存在
             if not os.path.exists(pdf_path):
                 response = requests.get(result.pdf_url, headers=headers)
-                full_text = response.content  # 直接读取文本内容，无需解码为 UTF-8 或其他编码，因为这是 PDF 内容，不是文本
                 with open(pdf_path, 'wb') as f:
                     f.write(response.content)
                 time.sleep(self.args.sleep_time)
-            else:
-                with open(pdf_path, 'rb') as pdf_file:
-                    full_text = pdf_file.read()  # 直接读取文件内容，无需再次下载
-
+            try:
+                doc=fitz.open(pdf_path)
+                full_text = '\n'.join([page.get_text() for page in doc])  # 提取所有页面的文本
+            except Exception as e:
+                print(f"无法读取PDF文件 {pdf_path}: {e}")
+                full_text = result.summary  # 如果读取失败，使用摘要作为替代
+            print(full_text)
             # 新增PDF预处理流程
             # print(f"开始解析论文 {result.entry_id.split('/')[-1]}")
             # try:
@@ -170,11 +172,10 @@ class ArxivPaperCrawler:
             # except Exception as e:
             #     print(f"PDF解析失败: {e}, 回退到摘要处理")
             #     full_text = result.summary
-            # if  not check_api_connection():
-            #     print("API连接失败，终止程序")
-            #     break
+            if  not check_api_connection():
+                print("API连接失败，终止程序")
+                break
             # 调用 DeepSeek API 解析
-            
             response_text = parse_with_deepseek(full_text)
 
             if response_text:
